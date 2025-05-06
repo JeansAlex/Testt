@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Application - Bank App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .account-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .account-info p {
+            font-size: 1.2rem;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-messages ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .flash-messages li {
+            background-color: #ffdd57;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .form-container {
+            margin-top: 20px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            padding: 10px;
+            width: calc(100% - 20px);
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background-color: #f39c12;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            background-color: #e67e22;
+        }
+
+        .status {
+            font-weight: bold;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .status.active {
+            background-color: #27ae60;
+        }
+
+        .status.repaid {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Loan Application</h1>
+    </header>
+
+    <div class="container">
+        <div class="account-info">
+            <p><strong>Welcome, {{ user.name }}!</strong></p>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-messages">
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% if user.pending_loan_amount %}
+        <!-- User has a pending loan offer -->
+        <div class="loan-offer">
+            <h3>Your Loan Offer</h3>
+            <p><strong>Amount:</strong> ${{ user.pending_loan_amount }}</p>
+            <p><strong>Interest Rate:</strong> {{ user.loan_interest_rate }}%</p>
+
+            <!-- Accept or Reject Loan Offer -->
+            <form action="/accept_loan" method="POST" style="display:inline-block;">
+                <button type="submit">Accept Loan</button>
+            </form>
+            <form action="/reject_loan" method="POST" style="display:inline-block;">
+                <button type="submit">Reject Loan</button>
+            </form>
+        </div>
+
+        {% elif user.loan_histories|length > 0 %}
+        <!-- Active loan exists -->
+        <div class="active-loan">
+            {% set active_loan = user.loan_histories[-1] %}
+            {% if active_loan.loan_amount > 0 %}
+            <h3>Your Active Loan</h3>
+            <p><strong>Loan Amount:</strong> ${{ active_loan.loan_amount }}</p>
+            <p><strong>Interest Rate:</strong> {{ active_loan.interest_rate }}%</p>
+
+            <h3>Pay Down Active Loan</h3>
+            <form action="/pay_loan" method="POST">
+                <label for="payment_amount">Payment Amount:</label>
+                <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}"
+                    placeholder="Enter amount to pay" required><br>
+                <button type="submit">Pay Loan</button>
+            </form>
+            {% else %}
+            <p>Your active loan is fully repaid!</p>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <!-- No pending loan and no active loan -->
+        <div class="loan-application">
+            <p>No current loan offer available. Apply below:</p>
+            <form action="/loan_offer" method="POST">
+                <label>Annual Income:</label>
+                <input type="number" name="income" required><br>
+                <label>Credit Score:</label>
+                <input type="number" name="credit_score" required><br>
+                <button type="submit">Apply for Loan</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <a href="/">Back to Dashboard</a>
+    </div>
+</body>
+
+</html>
