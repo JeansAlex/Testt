@@ -39,101 +39,109 @@
             margin-bottom: 20px;
         }
 
-        .account-info {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
         }
 
-        .account-info p {
-            font-size: 1.2rem;
-        }
-
-        .flash-messages {
+        p {
+            font-size: 1.1rem;
             margin-bottom: 20px;
         }
 
-        .flash-messages ul {
-            list-style-type: none;
-            padding-left: 0;
+        form {
+            margin-bottom: 30px;
         }
 
-        .flash-messages li {
-            background-color: #ffdd57;
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        form input {
+            width: 100%;
             padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .loan-offer,
-        .active-loan,
-        .loan-application {
-            margin-top: 20px;
-        }
-
-        .loan-offer p,
-        .active-loan p,
-        .loan-application p {
-            font-size: 1.2rem;
-        }
-
-        .form-container {
-            margin-top: 20px;
-        }
-
-        input[type="number"],
-        input[type="text"] {
-            padding: 10px;
-            width: calc(100% - 20px);
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #3498db;
+        form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #27ae60;
             color: white;
             border: none;
             border-radius: 5px;
             font-size: 1.1rem;
             cursor: pointer;
-            margin-right: 10px;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        form button:hover {
+            background-color: #2ecc71;
         }
 
-        .status {
-            font-weight: bold;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+        ul {
+            list-style-type: none;
+            padding: 0;
         }
 
-        .status.active {
-            background-color: #27ae60;
-        }
-
-        .status.repaid {
-            background-color: #e74c3c;
+        ul li {
+            background-color: #ecf0f1;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.1rem;
         }
 
         a {
-            display: inline-block;
-            margin-top: 20px;
+            color: #2980b9;
             text-decoration: none;
-            background-color: #f39c12;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
+            font-size: 1rem;
         }
 
         a:hover {
-            background-color: #e67e22;
+            text-decoration: underline;
+        }
+
+        .loan-actions {
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .loan-actions button {
+            width: auto;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .loan-actions button:hover {
+            background-color: #2980b9;
+        }
+
+        .message-list {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .message-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .message-list li {
+            margin: 8px 0;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            font-size: 1.1rem;
         }
     </style>
 </head>
@@ -144,60 +152,56 @@
     </header>
 
     <div class="container">
-        <div class="account-info">
-            <p><strong>Welcome, {{ user.name }}!</strong></p>
-            <p><strong>Current Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
-        </div>
+        <h2>Welcome, {{ user.name }}!</h2>
+        <p><strong>Current Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
 
         <!-- Flash messages -->
         {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="flash-messages">
-            <ul>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+            {% if messages %}
+                <div class="message-list">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         {% endwith %}
 
         {% if has_offer %}
-        <!-- Display pending loan offer -->
-        <div class="loan-offer">
             <h3>Your Loan Offer</h3>
             <p><strong>Amount:</strong> ${{ "%.2f"|format(amount) }}</p>
             <p><strong>Interest Rate:</strong> {{ "%.2f"|format(interest) }}%</p>
-            <form action="/accept_loan" method="POST" style="display:inline-block;">
-                <button type="submit">Accept Loan</button>
-            </form>
-            <form action="/reject_loan" method="POST" style="display:inline-block;">
-                <button type="submit">Reject Loan</button>
-            </form>
-        </div>
+
+            <div class="loan-actions">
+                <form action="/accept_loan" method="POST" style="display:inline-block;">
+                    <button type="submit">Accept Loan</button>
+                </form>
+
+                <form action="/reject_loan" method="POST" style="display:inline-block;">
+                    <button type="submit">Reject Loan</button>
+                </form>
+            </div>
+
         {% elif user.loan_histories|length > 0 %}
-        <!-- Display current active loan if no pending offer -->
-        <div class="active-loan">
             {% set active_loan = user.loan_histories[0] %}
             {% if active_loan.loan_amount > 0 %}
-            <h3>Active Loan</h3>
-            <p><strong>Loan Amount:</strong> ${{ "%.2f"|format(active_loan.loan_amount) }}</p>
-            <p><strong>Interest Rate:</strong> {{ "%.2f"|format(active_loan.interest_rate) }}%</p>
+                <h3>Your Active Loan</h3>
+                <p><strong>Loan Amount:</strong> ${{ "%.2f"|format(active_loan.loan_amount) }}</p>
+                <p><strong>Interest Rate:</strong> {{ "%.2f"|format(active_loan.interest_rate) }}%</p>
 
-            <h3>Make a Payment</h3>
-            <form action="/pay_loan" method="POST">
-                <label for="payment_amount">Payment Amount:</label>
-                <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
-                <button type="submit">Pay Loan</button>
-            </form>
+                <h3>Make a Payment</h3>
+                <form action="/pay_loan" method="POST">
+                    <label for="payment_amount">Payment Amount:</label>
+                    <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
+                    <button type="submit">Pay Loan</button>
+                </form>
 
             {% else %}
-            <p>Your active loan is fully repaid!</p>
+                <p>Your active loan is fully repaid!</p>
             {% endif %}
-        </div>
+
         {% else %}
-        <!-- Display loan application form -->
-        <div class="loan-application">
             <p>No current loan offer. Apply below:</p>
             <form action="/loan_offer" method="POST">
                 <label for="income">Annual Income:</label>
@@ -208,10 +212,9 @@
 
                 <button type="submit">Apply for Loan</button>
             </form>
-        </div>
         {% endif %}
 
-        <a href="/">Back to Dashboard</a>
+        <p><a href="/">Back to Dashboard</a></p>
     </div>
 </body>
 

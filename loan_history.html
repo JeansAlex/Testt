@@ -34,73 +34,54 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        .account-info {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-        }
-
-        .account-info p {
-            font-size: 1.2rem;
-        }
-
         table {
             width: 100%;
+            margin-bottom: 20px;
             border-collapse: collapse;
-            margin-top: 20px;
         }
 
         table th, table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border: 1px solid #ccc;
         }
 
         table th {
-            background-color: #3498db;
-            color: white;
+            background-color: #ecf0f1;
         }
 
-        table tr:nth-child(even) {
-            background-color: #f9f9f9;
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
         }
 
-        .status {
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: bold;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
         }
 
-        .status.active {
-            background-color: #27ae60;
-        }
-
-        .status.repaid {
-            background-color: #e74c3c;
-        }
-
-        .form-container {
-            margin-top: 20px;
-        }
-
-        input[type="number"] {
+        form input {
+            width: 100%;
             padding: 10px;
-            width: calc(100% - 20px);
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
         }
 
-        button {
-            padding: 10px 20px;
+        form button {
+            width: 100%;
+            padding: 10px;
             background-color: #27ae60;
             color: white;
             border: none;
@@ -109,36 +90,38 @@
             cursor: pointer;
         }
 
-        button:hover {
+        form button:hover {
             background-color: #2ecc71;
         }
 
-        .view-loan-history {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #f39c12;
-            color: white;
+        .message-list {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .message-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .message-list li {
+            margin: 8px 0;
+            padding: 10px;
+            background-color: #ecf0f1;
             border-radius: 5px;
+            font-size: 1.1rem;
+        }
+
+        a {
+            color: #2980b9;
             text-decoration: none;
+            font-size: 1rem;
         }
 
-        .view-loan-history:hover {
-            background-color: #e67e22;
-        }
-
-        .logout {
-            display: inline-block;
-            margin-top: 20px;
-            background-color: #e74c3c;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        .logout:hover {
-            background-color: #c0392b;
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -149,72 +132,66 @@
     </header>
 
     <div class="container">
-        <div class="account-info">
-            <p><strong>Welcome, {{ user.name }}!</strong></p>
-            <p><strong>Current Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
-        </div>
+        <p><strong>Current Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
 
         <!-- Flash messages -->
         {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="flash-messages">
-            <ul>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+            {% if messages %}
+                <div class="message-list">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         {% endwith %}
 
         {% if loans %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Date Accepted</th>
-                    <th>Remaining Amount</th>
-                    <th>Interest Rate</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for loan in loans %}
-                <tr>
-                    <td>{{ loan.date_accepted.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>${{ "%.2f"|format(loan.loan_amount) }}</td>
-                    <td>{{ "%.2f"|format(loan.interest_rate) }}%</td>
-                    <td class="status {% if loop.index0 == 0 %}active{% else %}repaid{% endif %}">
-                        {% if loop.index0 == 0 %}
-                        Active
-                        {% else %}
-                        Repaid
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date Accepted</th>
+                        <th>Remaining Amount</th>
+                        <th>Interest Rate</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                        <tr>
+                            <td>{{ loan.date_accepted.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>${{ "%.2f"|format(loan.loan_amount) }}</td>
+                            <td>{{ "%.2f"|format(loan.interest_rate) }}%</td>
+                            <td>
+                                {% if loop.index0 == 0 %}
+                                    Active
+                                {% else %}
+                                    Repaid
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-        <!-- Payment form for active loan -->
-        {% set active_loan = loans[0] %}
-        {% if active_loan.loan_amount > 0 %}
-        <div class="form-container">
-            <h3>Make a Payment Toward Your Active Loan</h3>
-            <form action="/pay_loan" method="POST">
-                <label for="payment_amount">Payment Amount:</label>
-                <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
-                <button type="submit">Pay Loan</button>
-            </form>
-        </div>
+            <!-- Payment form for active loan -->
+            {% set active_loan = loans[0] %}
+            {% if active_loan.loan_amount > 0 %}
+                <h3>Make a Payment Toward Your Active Loan</h3>
+                <form action="/pay_loan" method="POST">
+                    <label for="payment_amount">Payment Amount:</label>
+                    <input type="number" name="payment_amount" step="0.01" min="0" max="{{ user.balance }}" required>
+                    <button type="submit">Pay Loan</button>
+                </form>
+            {% else %}
+                <p>You have fully repaid your latest loan.</p>
+            {% endif %}
         {% else %}
-        <p>You have fully repaid your latest loan.</p>
-        {% endif %}
-        {% else %}
-        <p>You have no loan history.</p>
+            <p>You have no loan history.</p>
         {% endif %}
 
-        <a href="https://localhost:5000" class="view-loan-history">Back to Dashboard</a>
-        <a href="/logout" class="logout">Logout</a>
+        <p><a href="/" class="loan-button">Back to Dashboard</a></p>
     </div>
 </body>
 

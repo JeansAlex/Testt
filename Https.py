@@ -59,7 +59,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(120), nullable=True)
     account_number = db.Column(db.String(20), unique=True, nullable=False, default=generate_account_number)
-    balance = db.Column(db.Float, default=1000.0)
+    balance = db.Column(db.Float, default=0.0)
     credit_score = db.Column(db.Integer, nullable=False, default=650)
     income = db.Column(db.Float, nullable=False, default=40000.0)
     pending_loan_amount = db.Column(db.Float, nullable=True)
