@@ -1,7 +1,6 @@
 import random
 import string
 import json
-from sqlalchemy import Column, Float
 import secrets
 import webbrowser
 import logging
@@ -60,7 +59,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(120), nullable=True)
     account_number = db.Column(db.String(20), unique=True, nullable=False, default=generate_account_number)
-    balance = db.Column(db.Float, nullable=False)  # Removed default value
+    balance = db.Column(db.Float, default=1000.0)
     credit_score = db.Column(db.Integer, nullable=False, default=650)
     income = db.Column(db.Float, nullable=False, default=40000.0)
     pending_loan_amount = db.Column(db.Float, nullable=True)
@@ -87,7 +86,7 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 # Load OAuth credentials
-with open(r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\client_secret_989028034934-k8sclvu73i82uv49mgni1spg1sukmbf7.apps.googleusercontent.com.json') as f:
+with open(r'C:\Users\alexg\Downloads\client_secret_989028034934-k8sclvu73i82uv49mgni1spg1sukmbf7.apps.googleusercontent.com.json') as f:
     creds = json.load(f)['web']
 
 oauth = OAuth(app)
@@ -206,12 +205,8 @@ def register():
         email = request.form['email']
         name = request.form['name']
         password = request.form['password']
-        
-        # Check if the email already exists
         if User.query.filter_by(email=email).first():
             return "Email is already registered."
-        
-        # Create the user (without initial deposit)
         user = User(
             email=email,
             name=name,
@@ -220,41 +215,9 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        
-        # After successful registration, prompt for initial deposit
-        return redirect(url_for('set_initial_balance', user_id=user.id))
-    
-    return render_template('register.html')
-
-@app.route('/set_initial_balance/<int:user_id>', methods=['GET', 'POST'])
-def set_initial_balance(user_id):
-    user = User.query.get_or_404(user_id)
-
-    if request.method == 'POST':
-        try:
-            initial_balance = float(request.form['initial_balance'])
-        except ValueError:
-            flash("Invalid deposit amount.")
-            return redirect(url_for('set_initial_balance', user_id=user.id))
-
-        if initial_balance <= 0:
-            flash("Initial deposit must be greater than zero.")
-            return redirect(url_for('set_initial_balance', user_id=user.id))
-        
-        # Update the user's balance and commit
-        user.balance = initial_balance
-        db.session.commit()
-
-        # Log the deposit as a transaction
-        db.session.add(Transaction(action=f"Initial deposit of ${initial_balance:.2f}", user_id=user.id))
-        db.session.commit()
-
-        # Log the user in and redirect to the homepage
         login_user(user)
-        flash("Account created successfully with an initial deposit!")
         return redirect('/')
-
-    return render_template('set_initial_balance.html', user=user)
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -297,16 +260,8 @@ def google_authorized():
         db.session.add(user)
         db.session.commit()
 
-        # Store user info in session
-        session['user_id'] = user.id
-        session['name'] = user.name
-
-        return redirect(url_for('set_initial_balance', user_id=user.id))
-
     login_user(user)
     return redirect('/')
-
-
 
 @app.route('/deposit', methods=['POST'])
 @login_required
@@ -408,23 +363,23 @@ if __name__ == '__main__':
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(
-        certfile=r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\cert.pem',
-        keyfile=r'C:\Users\mitchellalexand\OneDrive - Eastern Connecticut State University\All Git\notreadyyet-main\key.pem'
+        certfile=r'C:\Users\alexg\Downloads\cert.pem',
+        keyfile=r'C:\Users\alexg\Downloads\key.pem'
     )
 
-    # Start the Flask app in a background thread
-    def run_app():
-        app.run(
-            host='127.0.0.1',
-            port=5000,
-            ssl_context=context
-        )
+    # Open browser after a delay
+    def open_browser():
+        time.sleep(1.5)
+        webbrowser.open('https://localhost:5000')
 
-    # Start the Flask app in a background thread
-    Thread(target=run_app).start()
+    # Start the browser thread
+    browser_thread = Thread(target=open_browser)
+    browser_thread.daemon = True  # Set as daemon thread
+    browser_thread.start()
 
-    # Give the Flask server a moment to start
-    time.sleep(2)
-
-    # Open the browser automatically
-    webbrowser.open('https://localhost:5000')
+    # Run the Flask app in the main thread
+    app.run(
+        host='127.0.0.1',
+        port=5000,
+        ssl_context=context
+    )
